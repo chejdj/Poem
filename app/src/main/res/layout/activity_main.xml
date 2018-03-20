@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main"
+    tools:context="com.example.administrator.poem.MainActivity">
+ <android.support.v4.widget.SwipeRefreshLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:id="@+id/swipe_refresh"
+     android:paddingTop="16dp"
+     android:layout_width="wrap_content"
+     android:layout_height="400dp">
+  <ScrollView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+   <TextView
+       android:id="@+id/poem_content"
+       android:textSize="22sp"
+       android:layout_width="256dp"
+       android:textColor="#544A48"
+       android:layout_height="wrap_content" />
+  </ScrollView>
+ </android.support.v4.widget.SwipeRefreshLayout>
+</RelativeLayout>
