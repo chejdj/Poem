@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,7 +25,8 @@ public class Collect extends Activity {
         setContentView(R.layout.activity_collect);
         helper = new DB_Helper(this, null, null, 1);
         listView = (ListView) findViewById(R.id.list_view);
-        TextView view =findViewById(R.id.text_title);
+        View text =this.getLayoutInflater().inflate(R.layout.list_item,null);
+        TextView view =text.findViewById(R.id.text_title);
         typeface= Typeface.createFromAsset(getAssets(), "fonts/font_ksj.ttf");
         view.setTypeface(typeface);
         mArrayAdapter = new ArrayAdapter<String>(this, R.layout.list_item);
