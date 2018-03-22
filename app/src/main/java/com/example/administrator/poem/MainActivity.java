@@ -1,6 +1,8 @@
 package com.example.administrator.poem;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
@@ -8,18 +10,21 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 
-import android.view.Window;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import android.view.View;
 import android.widget.RelativeLayout;
+
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.File;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
 
 public class MainActivity extends Activity {
     private final int BUFFER_SIZE = 400000;
@@ -30,16 +35,19 @@ public class MainActivity extends Activity {
     private TextView poem_text;
     private SwipeRefreshLayout layout;
     private RelativeLayout main;
+    private static  int ID;
+    private DB_Helper helper;
+    private Typeface tpeface;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         layout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         poem_text = (TextView) findViewById(R.id.poem_content);
         main=(RelativeLayout)findViewById(R.id.main);
+        helper=new DB_Helper(this,null,null,1);
         FindaPoem();
-        Typeface tpeface = Typeface.createFromAsset(getAssets(), "fonts/font_ksj.ttf");
+        tpeface = Typeface.createFromAsset(getAssets(), "fonts/font_ksj.ttf");
         poem_text.setTypeface(tpeface);
         layout.setColorScheme(R.color.bag_poem);
         layout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -59,11 +67,11 @@ public class MainActivity extends Activity {
     }
 
     private void FindaPoem() {
-        int id = (int) (1 + Math.random() * (59170));
-        SQLiteDatabase db = opendatabase();
+        ID = (int) (1 + Math.random() * (59170));
+        SQLiteDatabase db = helper.opendatabase();
         if (db != null) {
             // 查找语句
-            Cursor cursor = db.rawQuery("Select * From poem Where _id=" + id, null);
+            Cursor cursor = db.rawQuery("Select * From poem Where _id=" + ID, null);
             cursor.moveToFirst();
           String content = cursor.getString(1) + "\n" + "\n" + cursor.getString(2) +
                     "\n" + "\n" + cursor.getString(13);
@@ -88,33 +96,62 @@ public class MainActivity extends Activity {
         }
     }
     // 这里是直接在文件中查找数据库，并没有创建数据库
-    private SQLiteDatabase opendatabase() {
-        File myDataPath = new File(DB_PATH);
-        if (!myDataPath.exists()) {
-            Log.e("DB", "create file");
-            myDataPath.mkdirs();
-        }
-        String dbfile = DB_PATH + "/" + DB_NAME;
-        File db = new File(dbfile);
-        try {
-            if (!db.exists()) {
-                InputStream in = this.getResources().openRawResource(R.raw.poem_all);
-                FileOutputStream out = new FileOutputStream(db);
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int count = 0;
-                while ((count = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, count);
+    private void AddPoemToCollected(){
+        SQLiteDatabase db = helper.opendatabase();
+        db.execSQL("UPDATE poem SET ticai = 1 WHERE _id ="+ID);
+        db.close();
+        Toast.makeText(getApplicationContext(),
+                "收藏成功",
+                Toast.LENGTH_SHORT).show();
+    }
+    private void DeletePoemFromCollected(){
+        SQLiteDatabase db = helper.opendatabase();
+        db.execSQL("UPDATE poem SET ticai = 0 WHERE _id ="+ID);
+        db.close();
+        Toast.makeText(getApplicationContext(),
+                "取消成功",
+                Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        getLayoutInflater().setFactory(new LayoutInflater.Factory() {
+            @Override
+            public View onCreateView(String name, Context context, AttributeSet attrs) {
+                try {
+                    LayoutInflater f = getLayoutInflater();
+                    final View view = f.createView(name, null, attrs);
+                    if (view instanceof TextView) {
+                        ((TextView) view).setTypeface(tpeface);
+                        ((TextView) view).setTextSize(18.0f);
+                    }
+                    return view;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
-                out.close();
-                in.close();
+                return null;
             }
-            SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
-            return database;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        });
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch(id){
+            case R.id.collect:
+                Intent intent = new Intent(this,Collect.class);
+                startActivity(intent);
+                break;
+            case R.id.like:
+                AddPoemToCollected();
+                break;
+            case R.id.dislike:
+                DeletePoemFromCollected();
+                break;
+            default:
+                break;
         }
-        return null;
+        return super.onOptionsItemSelected(item);
     }
 }
