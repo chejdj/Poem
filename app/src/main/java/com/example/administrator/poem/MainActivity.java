@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 import android.util.AttributeSet;
@@ -22,7 +23,6 @@ import android.widget.RelativeLayout;
 
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 
 
@@ -53,17 +53,15 @@ public class MainActivity extends Activity {
         layout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new android.os.Handler().postDelayed(new Runnable() {
-                    @Override
+                new Handler().postDelayed(new Runnable() {//延迟跳转=-=
                     public void run() {
                         layout.setRefreshing(true);
                         FindaPoem();
                         layout.setRefreshing(false);
                     }
                 }, 500);
-            }
-        });
-
+        }
+    });
     }
 
     private void FindaPoem() {
